@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coletivo de Combate à Poluição Sonora — Arraial D'Ajuda</title>
+<meta name="description" content="Coletivo de moradores de Arraial D'Ajuda que reúne registros de poluição sonora e perturbação do sossego para cobrar providências das autoridades competentes.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --areia: #f6ecd9;
+    --areia-clara: #fbf6ea;
+    --oceano: #0f6e6a;
+    --oceano-escuro: #0a4d4a;
+    --noturno: #123642;
+    --coral: #ef7a4f;
+    --coral-escuro: #d9622f;
+    --texto: #1f3a3d;
+    --branco: #ffffff;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--texto);
+    background: var(--areia-clara);
+    line-height: 1.6;
+  }
+  a{ color: var(--oceano-escuro); }
+  .container{ max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  header.nav{
+    position: sticky; top:0; z-index: 50;
+    background: var(--noturno);
+    box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  }
+  header.nav .container{
+    display:flex; flex-direction:column; align-items:center;
+    padding: 18px 24px 12px;
+  }
+  .brand{ color: var(--branco); font-weight:700; font-size: 1.15rem; display:flex; align-items:center; gap:10px; margin-bottom: 12px; text-align:center; }
+  .brand-dot{ width:10px;height:10px;border-radius:50%; background: var(--coral); flex-shrink:0; }
+  nav.links{ display:flex; gap: 22px; flex-wrap: wrap; justify-content:center; padding-top:10px; border-top: 1px solid rgba(255,255,255,.15); width:100%; }
+  nav.links a{
+    color: rgba(255,255,255,.85); text-decoration:none; font-size:.9rem; font-weight:500;
+  }
+  nav.links a:hover{ color: var(--coral); }
+
+  .hero{
+    background: linear-gradient(135deg, var(--oceano) 0%, var(--oceano-escuro) 100%);
+    color: var(--branco);
+    padding: 70px 24px 90px;
+    text-align:center;
+  }
+  .hero h1{ font-size: 2.1rem; margin: 0 0 14px; }
+  .hero p{ font-size: 1.05rem; max-width: 640px; margin: 0 auto 28px; color: rgba(255,255,255,.9); }
+  .btn{
+    display:inline-block; background: var(--coral); color: var(--branco); text-decoration:none;
+    padding: 13px 26px; border-radius: 30px; font-weight:600; font-size: .95rem;
+    transition: background .2s;
+  }
+  .btn:hover{ background: var(--coral-escuro); }
+  .btn-outline{
+    display:inline-block; border: 2px solid rgba(255,255,255,.7); color: var(--branco); text-decoration:none;
+    padding: 11px 24px; border-radius: 30px; font-weight:600; font-size: .95rem; margin-left: 10px;
+  }
+
+  section{ padding: 64px 24px; }
+  section.faixa-clara{ background: var(--areia-clara); }
+  section.faixa-areia{ background: var(--areia); }
+  h2{ font-size: 1.6rem; color: var(--oceano-escuro); margin-bottom: 8px; }
+  .kicker{ text-transform:uppercase; letter-spacing:1.5px; font-size:.75rem; color: var(--coral-escuro); font-weight:700; margin-bottom:6px; }
+  .lead{ max-width: 760px; }
+
+  .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:20px; margin-top: 28px; }
+  .card{
+    background: var(--branco); border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(15,60,60,.08);
+  }
+  .card h3{ margin-top:0; color: var(--oceano-escuro); font-size: 1.05rem; }
+  .card .num{ font-size: 1.8rem; }
+
+  .steps{ display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 20px; margin-top: 30px; }
+  .step{ background: var(--branco); border-radius: 14px; padding: 22px; box-shadow: 0 2px 12px rgba(15,60,60,.08); }
+  .step .step-num{
+    width: 34px; height:34px; border-radius:50%; background: var(--oceano); color:var(--branco);
+    display:flex; align-items:center; justify-content:center; font-weight:700; margin-bottom: 12px;
+  }
+
+  .aviso{
+    background: #fff3e9; border-left: 4px solid var(--coral); padding: 16px 20px; border-radius: 8px;
+    font-size: .92rem; margin-top: 20px;
+  }
+
+  #mapa{ height: 420px; border-radius: 14px; margin-top: 24px; box-shadow: 0 2px 14px rgba(15,60,60,.12); z-index:1; }
+  .mapa-legenda{ font-size: .85rem; color: #55686b; margin-top: 10px; }
+
+  table.dados{ width:100%; border-collapse: collapse; margin-top: 20px; background: var(--branco); border-radius: 10px; overflow:hidden; }
+  table.dados th, table.dados td{ padding: 12px 16px; text-align:left; border-bottom: 1px solid #eee; font-size: .92rem; }
+  table.dados th{ background: var(--oceano); color: var(--branco); font-weight:600; }
+
+  .relatorios-lista{ list-style:none; padding:0; margin-top: 24px; display:flex; flex-direction:column; gap:12px; }
+  .relatorios-lista li{
+    background: var(--branco); border-radius: 10px; padding: 16px 20px; display:flex; justify-content:space-between;
+    align-items:center; box-shadow: 0 2px 10px rgba(15,60,60,.06); flex-wrap:wrap; gap:8px;
+  }
+
+  .contato-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:20px; margin-top:28px; }
+  .contato-card{ background: var(--branco); border-radius: 14px; padding: 22px; text-align:center; box-shadow: 0 2px 12px rgba(15,60,60,.08); }
+  .contato-card .icone{ font-size: 1.8rem; margin-bottom: 8px; }
+
+  footer{ background: var(--noturno); color: rgba(255,255,255,.7); padding: 30px 24px; text-align:center; font-size: .85rem; }
+  footer a{ color: rgba(255,255,255,.85); }
+
+  .placeholder{ background: #fef6e0; color:#8a6d1a; padding: 2px 6px; border-radius:4px; font-size:.85em; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="container">
+    <div class="brand"><span class="brand-dot"></span> Coletivo de Combate à Poluição Sonora — Arraial D'Ajuda</div>
+    <nav class="links">
+      <a href="#sobre">O problema</a>
+      <a href="#missao">Quem somos</a>
+      <a href="#denunciar">Como denunciar</a>
+      <a href="#mapa">Mapa</a>
+      <a href="#relatorios">Relatórios</a>
+      <a href="#contato">Contato</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>Arraial D'Ajuda tem direito ao sossego</h1>
+    <p>Reunimos e organizamos registros de poluição sonora e perturbação do sossego em Arraial D'Ajuda para dar visibilidade ao problema e cobrar providências das autoridades responsáveis pela fiscalização.</p>
+    <a href="https://coletivopoluicaosonora.github.io/formulario-poluicao-sonora/" class="btn" target="_blank" rel="noopener">Registrar denúncia</a>
+  </div>
+</section>
+
+<section id="sobre" class="faixa-clara">
+  <div class="container">
+    <div class="kicker">O problema</div>
+    <h2>Poluição sonora não é só incômodo — é uma questão de saúde pública</h2>
+    <div class="lead">
+      <p>A Organização Mundial da Saúde (OMS) classifica a poluição sonora como o segundo fator ambiental que mais prejudica a saúde das populações em áreas urbanas, atrás apenas da poluição do ar. A exposição frequente a ruído excessivo está associada a distúrbios do sono, estresse crônico, problemas cardiovasculares, dificuldade de concentração, irritabilidade, ansiedade e, em casos de exposição prolongada a volumes muito altos, perda auditiva.</p>
+      <p>Além da saúde humana, o barulho excessivo afeta a fauna local — espantando aves e outros animais silvestres — e a qualidade de vida de quem mora, trabalha ou visita Arraial D'Ajuda em busca de tranquilidade.</p>
+      <p>Vivemos numa sociedade que normalizou o barulho constante: som de estabelecimentos comerciais em volume alto até altas horas, alto-falantes ambulantes, motores de embarcações e veículos modificados, festas em imóveis de aluguel por temporada. Essa naturalização faz com que o problema raramente seja tratado com a seriedade que merece — e é justamente isso que o Coletivo busca mudar.</p>
+    </div>
+  </div>
+</section>
+
+<section id="missao" class="faixa-areia">
+  <div class="container">
+    <div class="kicker">Quem somos</div>
+    <h2>Um agregador de ocorrências, não um órgão fiscalizador</h2>
+    <div class="lead">
+      <p>O Coletivo de Combate à Poluição Sonora de Arraial D'Ajuda é formado por moradores e instituições não governamentais da região. <strong>Não substituímos e não temos poder de fiscalização, autuação ou aplicação de multas</strong> — essas são atribuições exclusivas dos órgãos públicos competentes.</p>
+      <p>Nosso papel é reunir, organizar e agregar denúncias de poluição sonora e perturbação do sossego em um único lugar, produzindo relatórios periódicos com dados consolidados (locais recorrentes, tipos de fonte, horários, e se a polícia foi acionada). Com esses dados em mãos, cobramos das autoridades responsáveis — prefeitura de Porto Seguro, guarda municipal, polícia militar e demais órgãos de fiscalização — uma postura mais ativa no combate à poluição sonora na região.</p>
+      <p>Quanto mais registros recebemos, mais forte fica o retrato coletivo do problema — e mais difícil fica para as autoridades competentes ignorá-lo.</p>
+    </div>
+  </div>
+</section>
+
+<section id="denunciar" class="faixa-clara">
+  <div class="container">
+    <div class="kicker">Participe</div>
+    <h2>Como denunciar uma ocorrência</h2>
+    <p class="lead">Tudo pode ser feito de uma vez só, na hora da ocorrência, direto pelo formulário online: local, horário, tipo de fonte do barulho e evidência (foto, vídeo ou áudio) são preenchidos no mesmo momento.</p>
+    <div class="steps">
+      <div class="step">
+        <h3>Prefere se preparar antes?</h3>
+        <p>Se quiser, você pode reunir com calma essas informações e preencher o formulário depois: local/estabelecimento, horário, tipo de fonte do barulho (som automotivo, casa de show, obra, festa em imóvel de temporada, etc.) e uma estimativa do volume.</p>
+      </div>
+      <div class="step">
+        <h3>Evidência (opcional, mas ajuda)</h3>
+        <p>Um vídeo curto reforça o registro e pode ser anexado no próprio formulário, junto com o resto. O formulário aceita apenas vídeo (não áudio separado), com duração máxima de 20 segundos.</p>
+      </div>
+      <div class="step">
+        <h3>Identificação (opcional)</h3>
+        <p>Você pode se identificar no formulário se quiser, mas isso não é obrigatório para registrar a denúncia.</p>
+      </div>
+    </div>
+    <p style="margin-top:30px; text-align:center;">
+      <a class="btn" href="https://coletivopoluicaosonora.github.io/formulario-poluicao-sonora/" target="_blank" rel="noopener">Abrir formulário de denúncia</a>
+    </p>
+    <div class="aviso">
+      <strong>Sobre a sua privacidade:</strong> nome e contato, quando informados, ficam restritos ao uso interno do Coletivo e nunca aparecem nos relatórios públicos, que são sempre estatísticos e agregados. Mesmo que você autorize o compartilhamento dos seus dados com as autoridades, essa autorização é usada apenas caso a caso e internamente — o relatório mensal divulgado publicamente nunca identifica denunciantes.
+    </div>
+  </div>
+</section>
+
+<section id="mapa" class="faixa-areia">
+  <div class="container">
+    <div class="kicker">Dados agregados</div>
+    <h2>Mapa de ocorrências</h2>
+    <p class="lead">Cada marcador representa uma ocorrência registrada (sem qualquer dado de identificação do denunciante). O mapa é atualizado periodicamente pelo Coletivo junto com o relatório mensal.</p>
+    <div id="mapa"></div>
+    <p class="mapa-legenda">Mapa colaborativo — Arraial D'Ajuda, Porto Seguro/BA. As localizações são aproximadas.</p>
+  </div>
+</section>
+
+<section id="relatorios" class="faixa-clara">
+  <div class="container">
+    <div class="kicker">Transparência</div>
+    <h2>Relatórios mensais</h2>
+    <p class="lead">Todo mês o Coletivo publica um relatório com o total de ocorrências, os locais e tipos de fonte mais recorrentes, e o pedido formal de providências às autoridades competentes.</p>
+    <ul class="relatorios-lista" id="lista-relatorios">
+      <li>
+        <span>Pasta com todos os relatórios mensais (Google Drive)</span>
+        <a class="btn" href="https://drive.google.com/drive/folders/1nrzaG-HBZ3FMLfP_86eI6t05fEI24c_i" target="_blank" rel="noopener">Acessar pasta</a>
+      </li>
+    </ul>
+    <div class="aviso">
+      <span class="placeholder">Nota para o Coletivo:</span> a pasta do Drive precisa estar com o compartilhamento ativado como "qualquer pessoa com o link pode visualizar" para que este botão funcione para o público. Assim que houver mais relatórios, vale substituir este link único por uma lista com um botão de download para cada mês.
+    </div>
+  </div>
+</section>
+
+<section id="contato" class="faixa-areia">
+  <div class="container">
+    <div class="kicker">Fale com o Coletivo</div>
+    <h2>Contato</h2>
+    <div class="contato-grid" style="max-width:320px; margin-left:auto; margin-right:auto;">
+      <div class="contato-card">
+        <div class="icone">✉️</div>
+        <h3>E-mail</h3>
+        <p>coletivo.poluicao.sonora@gmail.com</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Coletivo de Combate à Poluição Sonora — Arraial D'Ajuda, Porto Seguro/BA</p>
+    <p>As medições de decibéis reportadas são estimativas não calibradas, sem valor de laudo técnico.</p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // Dados agregados de ocorrências (sem nome/contato do denunciante).
+  // Atualize este array a cada relatório mensal para manter o mapa em dia.
+  var ocorrencias = [
+    { lat: -16.501717, lng: -39.078305, tipo: "Casa de aluguel de temporada", mes: "07/2026" }
+  ];
+
+  var mapa = L.map('mapa').setView([-16.4989, -39.0797], 15);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(mapa);
+
+  ocorrencias.forEach(function(o){
+    L.circle([o.lat, o.lng], {
+      radius: 150,
+      color: '#ef7a4f',
+      fillColor: '#ef7a4f',
+      fillOpacity: 0.35
+    }).addTo(mapa)
+      .bindPopup('<strong>' + o.tipo + '</strong><br>Referência: ' + o.mes);
+  });
+</script>
+
+</body>
+</html>
