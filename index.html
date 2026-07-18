@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coletivo de Combate à Poluição Sonora — Arraial D'Ajuda</title>
 <meta name="description" content="Coletivo de moradores de Arraial D'Ajuda que reúne registros de poluição sonora e perturbação do sossego para cobrar providências das autoridades competentes.">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <style>
   :root{
     --areia: #f6ecd9;
@@ -92,7 +92,7 @@
     font-size: .92rem; margin-top: 20px;
   }
 
-  #mapa{ height: 420px; border-radius: 14px; margin-top: 24px; box-shadow: 0 2px 14px rgba(15,60,60,.12); z-index:1; }
+  #mapa{ position: relative; overflow: hidden; width: 100%; height: 420px; border-radius: 14px; margin-top: 24px; box-shadow: 0 2px 14px rgba(15,60,60,.12); z-index:1; }
   .mapa-legenda{ font-size: .85rem; color: #55686b; margin-top: 10px; }
 
   table.dados{ width:100%; border-collapse: collapse; margin-top: 20px; background: var(--branco); border-radius: 10px; overflow:hidden; }
@@ -239,7 +239,7 @@
   </div>
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
   // Dados agregados de ocorrências (sem nome/contato do denunciante).
   // Atualize este array a cada relatório mensal para manter o mapa em dia.
