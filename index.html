@@ -189,7 +189,79 @@
   </div>
 </section>
 
-<section id="relatorios" class="faixa-areia">
+<!-- ===== MAPA DE OCORRÊNCIAS (início) ===== -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  #mapa-ocorrencias{ height: 480px; min-height: 480px; width: 100%; border-radius: 12px; border: 1px solid #d9cdb4; margin-top: 18px; background: #e8e2d2; }
+  .mapa-legenda{ display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:12px; font-size:.88rem; }
+  .mapa-legenda span{ display:inline-flex; align-items:center; gap:6px; }
+  .mapa-legenda i{ width:12px; height:12px; border-radius:50%; display:inline-block; border:1px solid #fff; box-shadow:0 0 0 1px #888; }
+  #mapa-status{ margin-top:10px; font-size:.9rem; color:#555; }
+</style>
+
+<section id="mapa" style="background:#ffffff;">
+  <div class="container">
+    <div class="kicker">Dados abertos</div>
+    <h2>Mapa de ocorrências</h2>
+    <p class="lead">Cada ponto é uma ocorrência de poluição sonora registrada por moradores e visitantes. O mapa se atualiza sozinho a cada novo registro. Por privacidade, a posição é aproximada (cerca de 100 m) e não aparece nenhum nome, contato ou vídeo.</p>
+    <div id="mapa-ocorrencias"></div>
+    <div class="mapa-legenda" id="mapa-legenda"></div>
+    <div id="mapa-status">Carregando ocorrências…</div>
+  </div>
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  var URL_PONTOS = 'https://script.google.com/macros/s/AKfycbw_vnfFHPtz2vz3GTB_GVtmxi88SXSYP2RLWhjzX0sMq4JoX4r7rnEZh12J8cfYl885CA/exec?pontos=1';
+  var CORES = {
+    'Paredão de som': '#d64545',
+    'Bar/restaurante': '#e08a1e',
+    'Festa em estabelecimento comercial (barraca de praia / casa de festa)': '#8e44ad',
+    'Casa de aluguel de temporada': '#1f78b4',
+    'Espaço público': '#2e9e5b',
+    'Canteiro de obras': '#8c6d46',
+    'Evento patrocinado pelo poder público': '#c2185b',
+    'Outro': '#777777'
+  };
+  var status = document.getElementById('mapa-status');
+  var el = document.getElementById('mapa-ocorrencias');
+  if (typeof L === 'undefined') { status.textContent = 'Não foi possível carregar o mapa agora.'; return; }
+
+  var mapa = L.map(el).setView([-16.495, -39.075], 13);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, attribution: 'Imagens © Esri, Maxar, Earthstar Geographics'
+  }).addTo(mapa);
+  setTimeout(function () { mapa.invalidateSize(); }, 300);
+  window.addEventListener('resize', function () { mapa.invalidateSize(); });
+
+  function cor(tipo) { return CORES[tipo] || '#777777'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  fetch(URL_PONTOS)
+    .then(function (r) { return r.json(); })
+    .then(function (pontos) {
+      if (!Array.isArray(pontos) || pontos.length === 0) { status.textContent = 'Ainda não há ocorrências registradas.'; return; }
+      var limites = [];
+      var usados = {};
+      pontos.forEach(function (p) {
+        L.circleMarker([p.lat, p.lng], { radius: 8, color: '#ffffff', weight: 2, fillColor: cor(p.tipo), fillOpacity: 0.9 })
+          .bindPopup('<strong>' + esc(p.tipo) + '</strong>' + (p.mes ? '<br>' + esc(p.mes) : ''))
+          .addTo(mapa);
+        limites.push([p.lat, p.lng]);
+        usados[p.tipo] = true;
+      });
+      mapa.fitBounds(limites, { padding: [30, 30], maxZoom: 16 });
+      var leg = document.getElementById('mapa-legenda');
+      Object.keys(usados).forEach(function (t) {
+        leg.innerHTML += '<span><i style="background:' + cor(t) + '"></i>' + esc(t) + '</span>';
+      });
+      status.textContent = pontos.length + ' ocorrência(s) registrada(s). Clique em um ponto para ver o tipo de fonte.';
+    })
+    .catch(function () { status.textContent = 'Não foi possível carregar as ocorrências agora. Tente novamente mais tarde.'; });
+})();
+</script>
+<!-- ===== MAPA DE OCORRÊNCIAS (fim) ===== --><section id="relatorios" class="faixa-areia">
   <div class="container">
     <div class="kicker">Transparência</div>
     <h2>Relatórios mensais</h2>
