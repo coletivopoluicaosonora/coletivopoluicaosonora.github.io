@@ -229,9 +229,9 @@
   if (typeof L === 'undefined') { status.textContent = 'Não foi possível carregar o mapa agora.'; return; }
 
   var mapa = L.map(el).setView([-16.495, -39.075], 13);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 20, maxNativeZoom: 18, attribution: 'Imagens © Esri, Maxar, Earthstar Geographics'
-  }).addTo(mapa);
+ var satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20, maxNativeZoom: 18, attribution: 'Imagens © Esri, Maxar, Earthstar Geographics' }).addTo(mapa);
+var ruas = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20, maxNativeZoom: 19, attribution: '© OpenStreetMap' });
+L.control.layers({ 'Satélite': satelite, 'Ruas': ruas }, null, { position: 'topright' }).addTo(mapa);
   setTimeout(function () { mapa.invalidateSize(); }, 300);
   window.addEventListener('resize', function () { mapa.invalidateSize(); });
 
