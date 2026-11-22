@@ -117,6 +117,7 @@
       <a href="#sobre">O problema</a>
       <a href="#missao">Quem somos</a>
       <a href="#denunciar">Como denunciar</a>
+      <a href="#mapa">Mapa</a>
       <a href="#relatorios">Relatórios</a>
       <a href="#contato">Contato</a>
     </nav>
@@ -155,7 +156,7 @@
     <h2>Um agregador de ocorrências, não um órgão fiscalizador</h2>
     <div class="lead">
       <p>O Coletivo de Combate à Poluição Sonora de Arraial D'Ajuda é formado por moradores e instituições não governamentais da região. <strong>Não substituímos e não temos poder de fiscalização, autuação ou aplicação de multas</strong> — essas são atribuições exclusivas dos órgãos públicos competentes.</p>
-      <p>Nosso papel é reunir, organizar e agregar denúncias de poluição sonora e perturbação do sossego em um único lugar, produzindo relatórios periódicos com dados consolidados (locais recorrentes, tipos de fonte, horários, e se a polícia foi acionada). Com esses dados em mãos, cobramos das autoridades responsáveis — prefeitura de Porto Seguro, guarda municipal, polícia militar e demais órgãos de fiscalização — uma postura mais ativa no combate à poluição sonora na região.</p>
+      <p>Nosso papel é reunir, organizar e agregar denúncias de poluição sonora e perturbação do sossego em um único lugar, produzindo relatórios periódicos com dados consolidados (áreas de concentração, tipos de fonte, horários, e se a polícia foi acionada). Com esses dados em mãos, cobramos das autoridades responsáveis — prefeitura de Porto Seguro, guarda municipal, polícia militar e demais órgãos de fiscalização — uma postura mais ativa no combate à poluição sonora na região.</p>
       <p>Quanto mais registros recebemos, mais forte fica o retrato coletivo do problema — e mais difícil fica para as autoridades competentes ignorá-lo.</p>
     </div>
   </div>
@@ -261,18 +262,44 @@ L.control.layers({ 'Satélite': satelite, 'Ruas': ruas }, null, { position: 'top
     .catch(function () { status.textContent = 'Não foi possível carregar as ocorrências agora. Tente novamente mais tarde.'; });
 })();
 </script>
-<!-- ===== MAPA DE OCORRÊNCIAS (fim) ===== --><section id="relatorios" class="faixa-areia">
+<!-- ===== MAPA DE OCORRÊNCIAS (fim) ===== -->
+<section id="relatorios" class="faixa-areia">
   <div class="container">
     <div class="kicker">Transparência</div>
-    <h2>Relatórios mensais</h2>
-    <p class="lead">Todo mês o Coletivo publica um relatório com o total de ocorrências, os locais e tipos de fonte mais recorrentes, e o pedido formal de providências às autoridades competentes.</p>
+    <h2>Relatórios</h2>
+    <p class="lead">Todo mês o Coletivo gera um relatório com o total de ocorrências, os tipos de fonte, o mapa de calor e o pedido formal de providências às autoridades competentes. A cada dois meses, publica também um relatório consolidado com todo o histórico. Os relatórios públicos não identificam endereços nem estabelecimentos; a relação detalhada é encaminhada apenas às autoridades.</p>
     <ul class="relatorios-lista" id="lista-relatorios">
       <li>
-        <span>Pasta com todos os relatórios mensais (Google Drive)</span>
+        <span id="consolidado-texto">Relatório consolidado (carregando...)</span>
+        <a class="btn" id="consolidado-link" href="#relatorios" target="_blank" rel="noopener">Ler relatório (PDF)</a>
+      </li>
+      <li>
+        <span>Relatórios mensais (Google Drive)</span>
         <a class="btn" href="https://drive.google.com/drive/folders/1nrzaG-HBZ3FMLfP_86eI6t05fEI24c_i" target="_blank" rel="noopener">Acessar pasta</a>
       </li>
     </ul>
   </div>
+  <script>
+  (function () {
+    var texto = document.getElementById('consolidado-texto');
+    var link = document.getElementById('consolidado-link');
+    fetch('https://script.google.com/macros/s/AKfycbw_vnfFHPtz2vz3GTB_GVtmxi88SXSYP2RLWhjzX0sMq4JoX4r7rnEZh12J8cfYl885CA/exec?consolidado=1')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.url) {
+          link.href = d.url;
+          texto.textContent = 'Relatório consolidado, com dados até ' + (d.ate || 'o último mês fechado');
+        } else {
+          texto.textContent = 'O primeiro relatório consolidado será publicado em breve.';
+          link.style.display = 'none';
+        }
+      })
+      .catch(function () {
+        texto.textContent = 'Não foi possível carregar o relatório agora. Tente novamente mais tarde.';
+        link.style.display = 'none';
+      });
+  })();
+  </script>
 </section>
 
 <section id="contato" class="faixa-clara">
