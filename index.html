@@ -230,7 +230,7 @@
 
   var mapa = L.map(el).setView([-16.495, -39.075], 13);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19, attribution: 'Imagens © Esri, Maxar, Earthstar Geographics'
+    maxZoom: 20, maxNativeZoom: 18, attribution: 'Imagens © Esri, Maxar, Earthstar Geographics'
   }).addTo(mapa);
   setTimeout(function () { mapa.invalidateSize(); }, 300);
   window.addEventListener('resize', function () { mapa.invalidateSize(); });
